@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Base Styles --- */
+@layer base {
+  body {
+    @apply bg-surface text-gray-100 font-sans antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-50;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-500;
+  }
+
+  ::selection {
+    @apply bg-brand-600/40 text-white;
+  }
+}
+
+/* --- Utility Classes --- */
+@layer components {
+  .glass-card {
+    @apply bg-surface-50/80 backdrop-blur-md border border-white/5 rounded-2xl shadow-lg;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:border-brand-500/30 hover:shadow-brand-500/10 hover:shadow-xl;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-brand-300 to-cyan-400;
+  }
+
+  .btn-primary {
+    @apply px-6 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white font-medium rounded-xl
+           transition-all duration-300 hover:from-brand-500 hover:to-brand-400
+           hover:shadow-lg hover:shadow-brand-500/25 active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none;
+  }
+
+  .btn-danger {
+    @apply px-6 py-2.5 bg-gradient-to-r from-red-600 to-red-500 text-white font-medium rounded-xl
+           transition-all duration-300 hover:from-red-500 hover:to-red-400
+           hover:shadow-lg hover:shadow-red-500/25 active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl
+           transition-all duration-200 font-medium;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-surface-300/50 border border-white/10 rounded-xl text-white
+           placeholder:text-gray-500 focus:outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/20
+           transition-all duration-200;
+  }
+
+  .status-badge {
+    @apply px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider;
+  }
+
+  .status-pending {
+    @apply status-badge bg-yellow-500/15 text-yellow-400 border border-yellow-500/20;
+  }
+
+  .status-processing {
+    @apply status-badge bg-blue-500/15 text-blue-400 border border-blue-500/20 animate-pulse;
+  }
+
+  .status-completed {
+    @apply status-badge bg-green-500/15 text-green-400 border border-green-500/20;
+  }
+
+  .status-failed {
+    @apply status-badge bg-red-500/15 text-red-400 border border-red-500/20;
+  }
+
+  .status-awaiting {
+    @apply status-badge bg-purple-500/15 text-purple-400 border border-purple-500/20 animate-pulse-slow;
+  }
+
+  .metric-card {
+    @apply glass-card p-6 flex flex-col gap-2 animate-fade-in;
+  }
+
+  .table-row {
+    @apply border-b border-white/5 hover:bg-white/[0.02] transition-colors;
+  }
+}
+
+/* --- React Flow Custom Styles --- */
+.react-flow__node-sourceNode {
+  @apply !bg-green-900/80 !border-green-500/50 !rounded-xl !shadow-lg !shadow-green-500/10;
+}
+
+.react-flow__node-piracyNode {
+  @apply !bg-red-900/80 !border-red-500/50 !rounded-xl !shadow-lg !shadow-red-500/10;
+}
+
+.react-flow__node-fairUseNode {
+  @apply !bg-yellow-900/80 !border-yellow-500/50 !rounded-xl !shadow-lg !shadow-yellow-500/10;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__background {
+  background-color: #0f0f1a !important;
+}
+
+.react-flow__controls {
+  @apply !bg-surface-50/80 !border-white/10 !rounded-xl !shadow-lg;
+}
+
+.react-flow__controls-button {
+  @apply !bg-surface-300/50 !border-white/10 !text-gray-300 hover:!bg-brand-600/30;
+}
+
+/* --- Animations --- */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}

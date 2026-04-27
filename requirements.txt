@@ -1,0 +1,40 @@
+# ==========================================
+# TraceDNA Python Dependencies
+# ==========================================
+
+# Django Core
+django-unfold>=0.40,<1.0
+Django>=4.2,<5.0
+djangorestframework>=3.14,<4.0
+djangorestframework-simplejwt>=5.3,<6.0
+django-cors-headers>=4.3,<5.0
+
+# Database
+psycopg2-binary>=2.9,<3.0
+pgvector>=0.2,<1.0
+
+# Celery & Redis
+celery>=5.3,<6.0
+redis>=5.0,<6.0
+django-celery-beat>=2.6,<3.0
+
+# Google Cloud
+google-cloud-aiplatform>=1.38,<2.0
+google-cloud-storage>=2.13,<3.0
+google-api-core>=2.15,<3.0
+google-genai>=1.0.0
+google-generativeai>=0.8.0
+
+# Server
+gunicorn>=21.2,<23.0
+whitenoise>=6.6,<7.0
+
+# Utilities
+tldextract>=5.1,<6.0
+requests>=2.31,<3.0
+numpy>=1.26,<2.0
+yt-dlp>=2023.12.30
+instaloader>=4.10
+google-api-python-client>=2.100,<3.0
+imagehash>=4.3,<5.0
+Pillow>=10.0,<12.0

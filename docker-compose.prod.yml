@@ -1,0 +1,153 @@
+services:
+  db:
+    image: ankane/pgvector:latest
+    container_name: tracedna-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tracedna
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d tracedna"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: tracedna-redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tracedna-web
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn tracedna.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120"
+    volumes:
+      - static_volume:/app/staticfiles
+      - ./secrets/gcp-sa.json:/app/secrets/gcp-sa.json:ro
+    environment:
+      - DJANGO_SETTINGS_MODULE=tracedna.settings
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/tracedna
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - GCS_VAULT_BUCKET=${GCS_VAULT_BUCKET}
+      - GCS_TEMP_BUCKET=${GCS_TEMP_BUCKET}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-sa.json
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_DEBUG=True
+      - DJANGO_ALLOWED_HOSTS=${VM_IP},localhost,*
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GCP_LOCATION=asia-south1
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - YOUTUBE_DATA_API_KEY=${YOUTUBE_DATA_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tracedna-celery
+    restart: unless-stopped
+    command: celery -A tracedna worker -l info --concurrency=2
+    volumes:
+      - ./secrets/gcp-sa.json:/app/secrets/gcp-sa.json:ro
+    environment:
+      - DJANGO_SETTINGS_MODULE=tracedna.settings
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/tracedna
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - GCS_VAULT_BUCKET=${GCS_VAULT_BUCKET}
+      - GCS_TEMP_BUCKET=${GCS_TEMP_BUCKET}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-sa.json
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GCP_LOCATION=asia-south1
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - YOUTUBE_DATA_API_KEY=${YOUTUBE_DATA_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tracedna-beat
+    restart: unless-stopped
+    command: celery -A tracedna beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./secrets/gcp-sa.json:/app/secrets/gcp-sa.json:ro
+    environment:
+      - DJANGO_SETTINGS_MODULE=tracedna.settings
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/tracedna
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - GCS_VAULT_BUCKET=${GCS_VAULT_BUCKET}
+      - GCS_TEMP_BUCKET=${GCS_TEMP_BUCKET}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-sa.json
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GCP_LOCATION=asia-south1
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - YOUTUBE_DATA_API_KEY=${YOUTUBE_DATA_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tracedna-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=/backend
+      - DRF_API_URL=http://web:8000
+      - NODE_ENV=production
+    depends_on:
+      - web
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: tracedna-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles
+    depends_on:
+      - web
+      - frontend
+
+volumes:
+  pgdata:
+  redisdata:
+  static_volume:
+

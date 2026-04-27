@@ -1,0 +1,60 @@
+# ==========================================
+# TraceDNA .gitignore
+# ==========================================
+
+# --- Security: GCP Service Account Keys ---
+secrets/*.json
+!secrets/.gitkeep
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Virtual Environments ---
+venv/
+env/
+.venv/
+.env*
+
+# --- Django ---
+*.log
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+
+# --- Celery ---
+celerybeat-schedule
+celerybeat.pid
+
+# --- Docker ---
+*.env.local
+
+# --- Node / Next.js ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
